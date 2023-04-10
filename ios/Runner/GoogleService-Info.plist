@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>528360537954-7q8rl0dh5l9vudllf5ukd32rchajujrk.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.528360537954-7q8rl0dh5l9vudllf5ukd32rchajujrk</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDeV6MvK-97mWwPlaWTOkld0N33GjJGkZw</string>
+	<key>GCM_SENDER_ID</key>
+	<string>528360537954</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.vchertuk.min-mods</string>
+	<key>PROJECT_ID</key>
+	<string>minecraft-t</string>
+	<key>STORAGE_BUCKET</key>
+	<string>minecraft-t.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:528360537954:ios:15d535c9f15247f8fe363b</string>
+	<key>DATABASE_URL</key>
+	<string>https://minecraft-t-default-rtdb.europe-west1.firebasedatabase.app</string>
+</dict>
+</plist>
