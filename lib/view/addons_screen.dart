@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:minecraft/content_screen.dart';
 import 'package:minecraft/generated/locale_keys.g.dart';
 import 'package:minecraft/models/addons_full_model.dart';
+import 'package:minecraft/widgets/addon_card.dart';
 
 class AddonsScreen extends StatefulWidget {
   final String title;
@@ -235,7 +235,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                         itemCount: addons.length,
                         itemBuilder: (context, index) {
                           final addon = addons[index];
-                          return _Card(
+                          return CardAddon(
                               title: addon.title,
                               image: addon.previewUrl,
                               addon: addon,
@@ -252,139 +252,6 @@ class _AddonsScreenState extends State<AddonsScreen> {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _Card extends StatelessWidget {
-  final String? title;
-  final String? image;
-  final AddonsFull addon;
-  final List<AddonsFull> addons;
-
-  const _Card(
-      {Key? key,
-      required this.title,
-      required this.image,
-      required this.addon,
-      required this.addons})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final double scaleFactorHeight = MediaQuery.of(context).size.height / 890;
-    final double scaleFactorWidth = MediaQuery.of(context).size.width / 411.4;
-    return Padding(
-      padding: EdgeInsets.only(
-          left: 16 * scaleFactorWidth,
-          right: 16 * scaleFactorWidth,
-          bottom: 8 * scaleFactorHeight,
-          top: 8 * scaleFactorHeight),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-              context,
-              PageRouteBuilder(
-                  transitionDuration: const Duration(milliseconds: 200),
-                  transitionsBuilder: (BuildContext context, Animation<double> animation,
-                      Animation<double> secondaryAnimation, Widget child) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(1.0, 0.0),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
-                    );
-                  },
-                  pageBuilder: (BuildContext context, Animation<double> animation,
-                      Animation<double> secondaryAnimation) {
-                    return ContentScreen(
-                      addon: addon,
-                      addons: addons,
-                    );
-                  }));
-        },
-        child: Container(
-          decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black,
-                  blurRadius: 5 * scaleFactorWidth,
-                  offset: Offset(1, 1 * scaleFactorHeight),
-                ),
-              ],
-              color: const Color.fromRGBO(7, 128, 49, 1.0),
-              borderRadius: BorderRadius.circular(20 * scaleFactorWidth)),
-          width: MediaQuery.of(context).size.width - 32 * scaleFactorWidth,
-          height: 155 * scaleFactorHeight,
-          child: Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(17 * scaleFactorHeight),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black,
-                      blurRadius: 2 * scaleFactorWidth,
-                      offset: Offset(1, 1 * scaleFactorHeight),
-                    ),
-                  ],
-                ),
-                width: MediaQuery.of(context).size.width - 32 * scaleFactorWidth,
-                height: 110 * scaleFactorHeight,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(17 * scaleFactorWidth),
-                  child: image != ''
-                      ? Image.network(
-                          image ?? '',
-                          fit: BoxFit.fill,
-                        )
-                      : Image.asset(
-                          'assets/images/dirt.png',
-                          fit: BoxFit.fill,
-                        ),
-                ),
-              ),
-              Positioned(
-                right: 20 * scaleFactorWidth,
-                bottom: 8 * scaleFactorHeight,
-                child: Container(
-                  width: 33 * scaleFactorWidth,
-                  height: 33 * scaleFactorHeight,
-                  decoration: BoxDecoration(boxShadow: [
-                    BoxShadow(
-                      color: Colors.black,
-                      blurRadius: 5 * scaleFactorWidth,
-                      offset: Offset(1, 1 * scaleFactorHeight),
-                    ),
-                  ], shape: BoxShape.circle, color: Color.fromRGBO(20, 255, 0, 1)),
-                  child: Icon(
-                    Icons.download,
-                    color: Colors.white,
-                    size: 18 * scaleFactorHeight,
-                  ),
-                ),
-              ),
-              // ignore: prefer_const_constructors
-              Positioned(
-                  left: 20 * scaleFactorWidth,
-                  bottom: 10 * scaleFactorHeight,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width - 100 * scaleFactorWidth,
-                    child: Text(
-                      title ?? '',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18 * scaleFactorHeight,
-                          overflow: TextOverflow.ellipsis,
-                          fontFamily: "Minecraft"),
-                    ),
-                  ))
-            ],
-          ),
-        ),
       ),
     );
   }

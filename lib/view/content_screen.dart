@@ -8,14 +8,16 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:minecraft/generated/locale_keys.g.dart';
 import 'package:minecraft/models/addons_full_model.dart';
-import 'package:minecraft/report.dart';
+import 'package:minecraft/view/report.dart';
+import 'package:minecraft/widgets/addon_card.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ContentScreen extends StatefulWidget {
   final AddonsFull addon;
   final List<AddonsFull> addons;
+  final Function onReturn;
 
-  const ContentScreen({Key? key, required this.addon, required this.addons}) : super(key: key);
+  const ContentScreen({Key? key, required this.addon, required this.addons, required this.onReturn}) : super(key: key);
 
   @override
   State<ContentScreen> createState() => _ContentScreenState();
@@ -36,7 +38,7 @@ class _ContentScreenState extends State<ContentScreen> {
         await databaseRef.child('fulls/${widget.addon.id}/downloadUrl').once();
     final DataSnapshot snapshot = event.snapshot;
     setState(() {
-      downloadURL = snapshot.value.toString() ?? "";
+      downloadURL = snapshot.value.toString();
     });
   }
 
@@ -44,15 +46,16 @@ class _ContentScreenState extends State<ContentScreen> {
     Dio dio = Dio();
     try {
       final directory = await getExternalStorageDirectory();
+      final iosDirectory = await getApplicationDocumentsDirectory();
       String filePath;
       if (widget.addon.extension == 'mcpack') {
-        filePath = '${directory?.path}/games/com.mojang/behavior_packs/$fileName';
+        filePath = '${directory?.path ?? iosDirectory.path}/mods/$fileName';
       } else if (widget.addon.extension == 'mcaddon') {
-        filePath = '${directory?.path}';
+        filePath = '${directory?.path ?? iosDirectory.path}/behavior_packs/$fileName';
       } else if (widget.addon.extension == 'texture') {
-        filePath = '${directory?.path}/games/com.mojang/resource_packs/$fileName';
+        filePath = '${directory?.path ?? iosDirectory.path}/resource_packs/$fileName';
       } else {
-        filePath = '${directory?.path}/games/com.mojang/skin_packs/$fileName';
+        filePath = '${directory?.path ?? iosDirectory.path}/skin_packs/$fileName';
       }
       await dio.download(
         url,
@@ -155,6 +158,7 @@ class _ContentScreenState extends State<ContentScreen> {
                           child: GestureDetector(
                             onTap: () {
                               Navigator.of(context).pop();
+                              widget.onReturn.call();
                             },
                             child: Container(
                                 height: 26 * scaleFactorHeight,
@@ -219,7 +223,7 @@ class _ContentScreenState extends State<ContentScreen> {
                             child: RatingBarIndicator(
                                 itemCount: 5,
                                 itemSize: 30 * scaleFactorHeight,
-                                rating: double.parse(widget.addon.rating.toString()) ?? 2,
+                                rating: double.parse(widget.addon.rating.toString()),
                                 itemBuilder: (context, _) {
                                   return const Icon(
                                     Icons.star,
@@ -244,7 +248,7 @@ class _ContentScreenState extends State<ContentScreen> {
                           padding: EdgeInsets.only(
                               right: 20 * scaleFactorWidth, left: 10 * scaleFactorWidth),
                           child: Text(
-                            widget.addon.countDownload.toString() ?? '',
+                            widget.addon.countDownload.toString(),
                             style: TextStyle(
                                 fontSize: 12 * scaleFactorHeight, fontFamily: "Minecraft"),
                           ),
@@ -266,7 +270,7 @@ class _ContentScreenState extends State<ContentScreen> {
                           padding: EdgeInsets.only(
                               right: 10 * scaleFactorWidth, left: 10 * scaleFactorWidth),
                           child: Text(
-                            widget.addon.countLikes.toString() ?? '',
+                            widget.addon.countLikes.toString(),
                             style: TextStyle(
                                 fontSize: 12 * scaleFactorHeight, fontFamily: "Minecraft"),
                           ),
@@ -433,9 +437,14 @@ class _ContentScreenState extends State<ContentScreen> {
                             ]
                           : List<Widget>.generate(
                               widget.addons.length,
-                              (index) =>
-                                  _card(widget.addons[index], widget.addons.sublist(index + 1))),
+                              (index) => CardAddon(
+                                    title: widget.addons[index].title,
+                                    image: widget.addons[index].previewUrl,
+                                    addon: widget.addons[index],
+                                    addons: widget.addons.sublist(index + 1),
+                                  )),
                     )
+                    // _card(widget.addons[index], widget.addons.sublist(index + 1))
                   ],
                 )),
               ),
@@ -505,8 +514,9 @@ class _ContentScreenState extends State<ContentScreen> {
                 )
               ]),
               GestureDetector(
-                onTap: (){
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => FeedbackScreen()));
+                onTap: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) => FeedbackScreen()));
                 },
                 child: Container(
                   width: MediaQuery.of(context).size.width,
@@ -527,16 +537,22 @@ class _ContentScreenState extends State<ContentScreen> {
                 height: 2 * scaleFactorHeight,
                 color: const Color(0xffe1e1e1),
               ),
-              Container(
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.only(
-                    left: 16 * scaleFactorWidth,
-                    right: 16 * scaleFactorWidth,
-                    top: 20 * scaleFactorHeight,
-                    bottom: 20 * scaleFactorHeight),
-                child: Text(
-                  LocaleKeys.Content_doesnt_work.tr(),
-                  style: TextStyle(fontSize: 10 * scaleFactorHeight, fontFamily: "Minecraft"),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) => FeedbackScreen()));
+                },
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.only(
+                      left: 16 * scaleFactorWidth,
+                      right: 16 * scaleFactorWidth,
+                      top: 20 * scaleFactorHeight,
+                      bottom: 20 * scaleFactorHeight),
+                  child: Text(
+                    LocaleKeys.Content_doesnt_work.tr(),
+                    style: TextStyle(fontSize: 10 * scaleFactorHeight, fontFamily: "Minecraft"),
+                  ),
                 ),
               ),
               Container(
@@ -545,16 +561,22 @@ class _ContentScreenState extends State<ContentScreen> {
                 height: 2 * scaleFactorHeight,
                 color: const Color(0xffe1e1e1),
               ),
-              Container(
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.only(
-                    left: 16 * scaleFactorWidth,
-                    right: 16 * scaleFactorWidth,
-                    top: 20 * scaleFactorHeight,
-                    bottom: 20 * scaleFactorHeight),
-                child: Text(
-                  LocaleKeys.Other.tr(),
-                  style: TextStyle(fontSize: 10 * scaleFactorHeight, fontFamily: "Minecraft"),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) => FeedbackScreen()));
+                },
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.only(
+                      left: 16 * scaleFactorWidth,
+                      right: 16 * scaleFactorWidth,
+                      top: 20 * scaleFactorHeight,
+                      bottom: 20 * scaleFactorHeight),
+                  child: Text(
+                    LocaleKeys.Other.tr(),
+                    style: TextStyle(fontSize: 10 * scaleFactorHeight, fontFamily: "Minecraft"),
+                  ),
                 ),
               ),
               Container(
@@ -713,119 +735,6 @@ class _ContentScreenState extends State<ContentScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _card(AddonsFull addon, List<AddonsFull> addons) {
-    final double scaleFactorHeight = MediaQuery.of(context).size.height / 890;
-    final double scaleFactorWidth = MediaQuery.of(context).size.width / 411.4;
-    return Padding(
-      padding: EdgeInsets.only(
-          left: 16 * scaleFactorWidth,
-          right: 16 * scaleFactorWidth,
-          bottom: 8 * scaleFactorHeight,
-          top: 8 * scaleFactorHeight),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                  transitionDuration: const Duration(milliseconds: 200),
-                  transitionsBuilder: (BuildContext context, Animation<double> animation,
-                      Animation<double> secondaryAnimation, Widget child) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(1.0, 0.0),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
-                    );
-                  },
-                  pageBuilder: (BuildContext context, Animation<double> animation,
-                      Animation<double> secondaryAnimation) {
-                    return ContentScreen(addon: addon, addons: addons);
-                  }));
-        },
-        child: Container(
-          decoration: BoxDecoration(
-              color: const Color.fromRGBO(28, 155, 12, 1.0),
-              borderRadius: BorderRadius.circular(20 * scaleFactorWidth),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black,
-                  blurRadius: 2 * scaleFactorWidth,
-                  offset: Offset(1, 1 * scaleFactorHeight),
-                ),
-              ]),
-          width: MediaQuery.of(context).size.width - 32 * scaleFactorWidth,
-          height: 155 * scaleFactorHeight,
-          child: Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20 * scaleFactorHeight),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black,
-                        blurRadius: 2 * scaleFactorWidth,
-                        offset: Offset(1, 1 * scaleFactorHeight),
-                      ),
-                    ]),
-                width: MediaQuery.of(context).size.width - 32 * scaleFactorWidth,
-                height: 110 * scaleFactorHeight,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20 * scaleFactorWidth),
-                  child: addon.previewUrl != ''
-                      ? Image.network(
-                          addon.previewUrl!,
-                          fit: BoxFit.fill,
-                        )
-                      : Image.asset(
-                          'assets/images/dirt.png',
-                          fit: BoxFit.fill,
-                        ),
-                ),
-              ),
-              Positioned(
-                right: 20 * scaleFactorWidth,
-                bottom: 8 * scaleFactorHeight,
-                child: Container(
-                  width: 33 * scaleFactorWidth,
-                  height: 33 * scaleFactorHeight,
-                  decoration: BoxDecoration(boxShadow: [
-                    BoxShadow(
-                      color: Colors.black,
-                      blurRadius: 2 * scaleFactorWidth,
-                      offset: Offset(1, 1 * scaleFactorHeight),
-                    ),
-                  ], shape: BoxShape.circle, color: const Color.fromRGBO(20, 255, 0, 1)),
-                  child: Icon(
-                    size: 18 * scaleFactorHeight,
-                    Icons.download,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              // ignore: prefer_const_constructors
-              Positioned(
-                  left: 20 * scaleFactorWidth,
-                  bottom: 10 * scaleFactorHeight,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width - 100 * scaleFactorWidth,
-                    child: Text(
-                      addon.title!,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 21 * scaleFactorHeight,
-                          overflow: TextOverflow.ellipsis,
-                          fontFamily: "Minecraft"),
-                    ),
-                  ))
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
