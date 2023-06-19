@@ -462,7 +462,7 @@ class _ContentScreenState extends State<ContentScreen> {
 
   void _copyToClipboard(BuildContext context) {
     final double scaleFactorWidth = MediaQuery.of(context).size.width / 411.4;
-    Clipboard.setData(ClipboardData(text: widget.addon.seed));
+    Clipboard.setData(ClipboardData(text: widget.addon.seed ?? ""));
     Fluttertoast.showToast(
         msg: LocaleKeys.COPY_TEXT.tr(),
         toastLength: Toast.LENGTH_SHORT,
